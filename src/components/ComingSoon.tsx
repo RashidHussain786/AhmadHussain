@@ -2,7 +2,7 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { CATEGORIES } from "@/data/categories";
+import type { Category } from "@/lib/content/types";
 import { getDictionary } from "@/lib/dictionary";
 import { countdownText, formatDate } from "@/lib/format";
 import { localePath, type Locale } from "@/lib/i18n";
@@ -10,12 +10,12 @@ import { inSeason } from "@/lib/season";
 import { useToday } from "@/lib/use-today";
 
 /** Festivals within the next 45 days, with a countdown. Calculated in the browser. */
-export function ComingSoon({ locale }: { locale: Locale }) {
+export function ComingSoon({ locale, categories }: { locale: Locale; categories: Category[] }) {
   const today = useToday();
   const t = getDictionary(locale);
   if (!today) return null;
 
-  const upcoming = CATEGORIES.flatMap((c) => {
+  const upcoming = categories.flatMap((c) => {
     const next = inSeason(c, today);
     return next ? [{ c, next }] : [];
   }).sort((a, b) => a.next.daysLeft - b.next.daysLeft);

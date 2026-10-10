@@ -6,17 +6,19 @@ import { ArrowRightIcon } from "@/components/Icons";
 import { Logo } from "@/components/Logo";
 import { Breadcrumb, CtaBand, JsonLd } from "@/components/PageParts";
 import { SectionHeading } from "@/components/Section";
-import { CATEGORIES } from "@/data/categories";
-import { SHOP } from "@/data/shop";
+import { getContent } from "@/lib/content";
 import { getDictionary } from "@/lib/dictionary";
 import { isLocale, localePath } from "@/lib/i18n";
+import { callLink } from "@/lib/links";
+import { SITE_URL } from "@/lib/site";
 
 export async function generateMetadata({ params }: PageProps<"/[lang]/about">): Promise<Metadata> {
   const { lang } = await params;
   if (!isLocale(lang)) return {};
   const t = getDictionary(lang);
+  const { shop } = await getContent();
   return {
-    title: { absolute: `${t.about.metaTitle} | ${SHOP.name[lang]}` },
+    title: { absolute: `${t.about.metaTitle} | ${shop.name[lang]}` },
     description: t.about.metaDescription,
     alternates: {
       canonical: localePath(lang, "/about"),
@@ -30,6 +32,7 @@ export default async function AboutPage({ params }: PageProps<"/[lang]/about">) 
   if (!isLocale(lang)) notFound();
   const t = getDictionary(lang);
   const a = t.about;
+  const { shop, categories } = await getContent();
 
   return (
     <>
@@ -38,13 +41,13 @@ export default async function AboutPage({ params }: PageProps<"/[lang]/about">) 
           "@context": "https://schema.org",
           "@type": "AboutPage",
           name: a.metaTitle,
-          url: `${SHOP.siteUrl}${localePath(lang, "/about")}`,
+          url: `${SITE_URL}${localePath(lang, "/about")}`,
           mainEntity: {
             "@type": "Store",
-            name: SHOP.name.en,
-            alternateName: SHOP.name.hi,
+            name: shop.name.en,
+            alternateName: shop.name.hi,
             foundingDate: "1990",
-            telephone: SHOP.phoneLink,
+            telephone: callLink(shop).replace("tel:", ""),
             areaServed: "Samastipur, Bihar",
             address: {
               "@type": "PostalAddress",
@@ -92,8 +95,8 @@ export default async function AboutPage({ params }: PageProps<"/[lang]/about">) 
             <Logo size={64} />
             <p className="mt-6 text-sm font-bold tracking-[0.14em] text-brand-600 uppercase">{a.eyebrow}</p>
             <p className="mt-2 text-6xl font-extrabold text-ink sm:text-7xl">1990</p>
-            <p className="mt-3 text-lg font-bold text-ink">{SHOP.name[lang]}</p>
-            <p className="mt-1 text-muted">{SHOP.address[lang]}</p>
+            <p className="mt-3 text-lg font-bold text-ink">{shop.name[lang]}</p>
+            <p className="mt-1 text-muted">{shop.address[lang]}</p>
           </div>
         </div>
         <div>
@@ -128,7 +131,7 @@ export default async function AboutPage({ params }: PageProps<"/[lang]/about">) 
       <section className="mx-auto max-w-6xl px-4 py-16 sm:py-20">
         <SectionHeading center label={a.productsLabel} title={a.productsTitle} />
         <ul className="mt-10 grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-4">
-          {CATEGORIES.map((c) => (
+          {categories.map((c) => (
             <li key={c.slug}>
               <Link
                 href={localePath(lang, `/${c.slug}`)}
@@ -155,7 +158,7 @@ export default async function AboutPage({ params }: PageProps<"/[lang]/about">) 
         </ul>
       </section>
 
-      <CtaBand locale={lang} title={a.ctaTitle} text={a.ctaText} />
+      <CtaBand locale={lang} shop={shop} title={a.ctaTitle} text={a.ctaText} />
     </>
   );
 }

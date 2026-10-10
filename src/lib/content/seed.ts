@@ -1,52 +1,16 @@
 // ============================================================
-//  PRODUCTS — every category, its items, photos and festival dates.
-//
-//  • Text has an English (en) and Hindi (hi) version.
-//  • `dates`: the main festival day for each year (YYYY-MM-DD).
-//    The website shows the category under "Coming soon" from 45 days
-//    before that date until a few days after it.
-//    Dates are filled for 2026–2030 — add new years before they run out.
-//  • `allYear: true` means the items are sold all year (no dates needed).
-//
-//  PHOTOS — all photos are stored in the project (no outside image calls):
-//  • Category photos:  public/photos/categories/<slug>.jpg
-//  • Item photos:      public/photos/items/<item id>.jpg  (.jpeg/.png/.webp also work)
-//  • Home page photo:  public/photos/hero.jpg
-//  To change a photo, replace the file with your own photo (same name).
-//  To add a photo for an item that has none, save it as public/photos/items/<id>.jpg.
-//  Items without a photo file show a "Photo coming soon" placeholder.
-//  Current photos are free stock photos from Pexels (free to use, no credit needed).
+//  STARTING DATA — used only the first time, to fill data.json.
+//  After that, all changes are made in the admin panel (/admin)
+//  and saved in data.json (Vercel Blob in production, .data/ locally).
 // ============================================================
 
-import type { Localized } from "@/lib/i18n";
-
-export type Item = { id: string; name: Localized };
-
-export type Photo = { src: string; alt: Localized };
-
-export type Buyer = { icon: string; name: Localized };
-
-export type Category = {
-  slug: string;
-  icon: string;
-  name: Localized;
-  /** When people buy it, shown as a chip on the category page */
-  season: Localized;
-  /** Who usually buys these items */
-  buyers: Buyer[];
-  description: Localized;
-  image: Photo;
-  items: Item[];
-  allYear?: boolean;
-  dates?: string[];
-  dateLabel?: Localized;
-};
+import type { Buyer, Category, Content, Item } from "./types";
 
 const buyer = (icon: string, en: string, hi: string): Buyer => ({ icon, name: { en, hi } });
 
-const item = (id: string, en: string, hi: string): Item => ({ id, name: { en, hi } });
+const item = (id: string, en: string, hi: string, photo?: string): Item => ({ id, name: { en, hi }, photo });
 
-export const CATEGORIES: Category[] = [
+const CATEGORIES: Category[] = [
   {
     slug: "shaadi-puja",
     season: { en: "All year · peak in wedding season", hi: "पूरे साल · शादी के मौसम में ज़्यादा" },
@@ -70,13 +34,13 @@ export const CATEGORIES: Category[] = [
       item("paag", "Paag — red, yellow & white", "पाग — लाल, पीला व सफ़ेद"),
       item("makhmali-paag", "Makhmali Paag (velvet & zari)", "मखमली पाग (ज़री वाला)"),
       item("maur", "Maur / Mukut for groom", "मौर / मुकुट"),
-      item("jaimala", "Jaimala & Mala", "जयमाला एवं माला"),
-      item("sindoor", "Sindoor", "सिंदूर"),
-      item("sindoor-daani", "Sindoor-daani (sindoor box)", "सिंदूरदानी"),
-      item("kalawa", "Kalawa / Mauli", "कलावा / मौली"),
-      item("chunri", "Chunri", "चुनरी"),
-      item("puja-thali", "Puja Thali", "पूजा थाली"),
-      item("kalash", "Kalash", "कलश"),
+      item("jaimala", "Jaimala & Mala", "जयमाला एवं माला", "/photos/items/jaimala.jpg"),
+      item("sindoor", "Sindoor", "सिंदूर", "/photos/items/sindoor.jpg"),
+      item("sindoor-daani", "Sindoor-daani (sindoor box)", "सिंदूरदानी", "/photos/items/sindoor-daani.jpg"),
+      item("kalawa", "Kalawa / Mauli", "कलावा / मौली", "/photos/items/kalawa.jpg"),
+      item("chunri", "Chunri", "चुनरी", "/photos/items/chunri.jpg"),
+      item("puja-thali", "Puja Thali", "पूजा थाली", "/photos/items/puja-thali.jpg"),
+      item("kalash", "Kalash", "कलश", "/photos/items/kalash.jpg"),
     ],
   },
   {
@@ -99,12 +63,12 @@ export const CATEGORIES: Category[] = [
     },
     allYear: true,
     items: [
-      item("phenka-jaal", "Phenka / Jhaki Jaal (cast net)", "फेंका / झाकी जाल"),
-      item("phansa-jaal", "Phansa Jaal (gill net)", "फंसा जाल"),
-      item("jaal-all-sizes", "Nets in all sizes", "हर साइज़ का जाल"),
-      item("kaanta", "Hooks / Kaanta", "कांटा"),
-      item("dori", "Fishing line / Dori", "डोरी"),
-      item("bansi", "Bansi (fishing rod)", "बंसी"),
+      item("phenka-jaal", "Phenka / Jhaki Jaal (cast net)", "फेंका / झाकी जाल", "/photos/items/phenka-jaal.jpg"),
+      item("phansa-jaal", "Phansa Jaal (gill net)", "फंसा जाल", "/photos/items/phansa-jaal.jpg"),
+      item("jaal-all-sizes", "Nets in all sizes", "हर साइज़ का जाल", "/photos/items/jaal-all-sizes.jpg"),
+      item("kaanta", "Hooks / Kaanta", "कांटा", "/photos/items/kaanta.jpg"),
+      item("dori", "Fishing line / Dori", "डोरी", "/photos/items/dori.jpg"),
+      item("bansi", "Bansi (fishing rod)", "बंसी", "/photos/items/bansi.jpg"),
     ],
   },
   {
@@ -128,14 +92,14 @@ export const CATEGORIES: Category[] = [
     dates: ["2026-10-17", "2027-10-06", "2028-09-25", "2029-10-13", "2030-10-03"],
     dateLabel: { en: "Maha Saptami", hi: "महासप्तमी" },
     items: [
-      item("murti-colours", "Murti colours (poster & acrylic)", "मूर्ति रंग (पोस्टर व एक्रेलिक)"),
-      item("face-eye-colours", "Colours for face & eyes", "चेहरे व आँखों के रंग"),
+      item("murti-colours", "Murti colours (poster & acrylic)", "मूर्ति रंग (पोस्टर व एक्रेलिक)", "/photos/items/murti-colours.jpg"),
+      item("face-eye-colours", "Colours for face & eyes", "चेहरे व आँखों के रंग", "/photos/items/face-eye-colours.jpg"),
       item("murti-kesh", "Kesh / Hair", "केश / बाल"),
-      item("durga-mukut", "Mukut (crown)", "मुकुट"),
-      item("durga-jewellery", "Jewellery & Shringar", "गहने एवं श्रृंगार"),
-      item("durga-saree", "Saree & Vastra", "साड़ी एवं वस्त्र"),
-      item("chunri", "Chunri", "चुनरी"),
-      item("zari-glitter", "Zari, glitter & decoration", "ज़री, चमकी व सजावट"),
+      item("durga-mukut", "Mukut (crown)", "मुकुट", "/photos/items/durga-mukut.jpg"),
+      item("durga-jewellery", "Jewellery & Shringar", "गहने एवं श्रृंगार", "/photos/items/durga-jewellery.jpg"),
+      item("durga-saree", "Saree & Vastra", "साड़ी एवं वस्त्र", "/photos/items/durga-saree.jpg"),
+      item("chunri", "Chunri", "चुनरी", "/photos/items/chunri.jpg"),
+      item("zari-glitter", "Zari, glitter & decoration", "ज़री, चमकी व सजावट", "/photos/items/zari-glitter.jpg"),
     ],
   },
   {
@@ -159,13 +123,13 @@ export const CATEGORIES: Category[] = [
     dates: ["2026-06-26", "2027-06-16", "2028-06-04", "2029-05-25", "2030-05-14"],
     dateLabel: { en: "Ashura (10th Muharram)", hi: "आशूरा (10 मुहर्रम)" },
     items: [
-      item("coloured-paper", "Coloured paper", "रंगीन कागज़"),
-      item("panni", "Shiny foil paper / Panni", "पन्नी (चमकीला कागज़)"),
-      item("glitter-paper", "Glitter paper", "चमकी कागज़"),
-      item("jaali-paper", "Design-cut / Jaali paper", "जाली कागज़"),
-      item("paper-flowers", "Paper flowers", "कागज़ के फूल"),
+      item("coloured-paper", "Coloured paper", "रंगीन कागज़", "/photos/items/coloured-paper.jpg"),
+      item("panni", "Shiny foil paper / Panni", "पन्नी (चमकीला कागज़)", "/photos/items/panni.jpg"),
+      item("glitter-paper", "Glitter paper", "चमकी कागज़", "/photos/items/glitter-paper.jpg"),
+      item("jaali-paper", "Design-cut / Jaali paper", "जाली कागज़", "/photos/items/jaali-paper.jpg"),
+      item("paper-flowers", "Paper flowers", "कागज़ के फूल", "/photos/items/paper-flowers.jpg"),
       item("jhalar", "Jhalar / Frill", "झालर"),
-      item("tinsel", "Tinsel & decoration", "सजावट का सामान"),
+      item("tinsel", "Tinsel & decoration", "सजावट का सामान", "/photos/items/tinsel.jpg"),
     ],
   },
   {
@@ -189,13 +153,13 @@ export const CATEGORIES: Category[] = [
     dates: ["2026-09-04", "2027-08-25", "2028-08-13", "2029-09-01", "2030-08-21"],
     dateLabel: { en: "Janmashtami", hi: "जन्माष्टमी" },
     items: [
-      item("laddu-gopal-poshak", "Laddu Gopal Poshak", "लड्डू गोपाल पोशाक"),
-      item("jhula", "Jhula / Palna", "झूला / पालना"),
-      item("krishna-mukut", "Mukut", "मुकुट"),
-      item("bansuri", "Bansuri", "बांसुरी"),
+      item("laddu-gopal-poshak", "Laddu Gopal Poshak", "लड्डू गोपाल पोशाक", "/photos/items/laddu-gopal-poshak.jpg"),
+      item("jhula", "Jhula / Palna", "झूला / पालना", "/photos/items/jhula.jpg"),
+      item("krishna-mukut", "Mukut", "मुकुट", "/photos/items/krishna-mukut.jpg"),
+      item("bansuri", "Bansuri", "बांसुरी", "/photos/items/bansuri.jpg"),
       item("singhasan", "Singhasan", "सिंहासन"),
-      item("krishna-shringar", "Shringar & Mala", "श्रृंगार एवं माला"),
-      item("mor-pankh", "Mor Pankh", "मोर पंख"),
+      item("krishna-shringar", "Shringar & Mala", "श्रृंगार एवं माला", "/photos/items/krishna-shringar.jpg"),
+      item("mor-pankh", "Mor Pankh", "मोर पंख", "/photos/items/mor-pankh.jpg"),
     ],
   },
   {
@@ -219,13 +183,13 @@ export const CATEGORIES: Category[] = [
     dates: ["2026-01-23", "2027-02-11", "2028-01-31", "2029-01-19", "2030-02-07"],
     dateLabel: { en: "Vasant Panchami", hi: "वसंत पंचमी" },
     items: [
-      item("murti-colours", "Murti colours (poster & acrylic)", "मूर्ति रंग (पोस्टर व एक्रेलिक)"),
-      item("face-eye-colours", "Colours for face & eyes", "चेहरे व आँखों के रंग"),
+      item("murti-colours", "Murti colours (poster & acrylic)", "मूर्ति रंग (पोस्टर व एक्रेलिक)", "/photos/items/murti-colours.jpg"),
+      item("face-eye-colours", "Colours for face & eyes", "चेहरे व आँखों के रंग", "/photos/items/face-eye-colours.jpg"),
       item("murti-kesh", "Kesh / Hair", "केश / बाल"),
-      item("saraswati-mukut-jewellery", "Mukut & Jewellery", "मुकुट एवं गहने"),
-      item("yellow-white-saree", "Yellow & white Saree / Vastra", "पीली व सफ़ेद साड़ी / वस्त्र"),
-      item("veena", "Veena", "वीणा"),
-      item("saraswati-decoration", "Decoration items", "सजावट का सामान"),
+      item("saraswati-mukut-jewellery", "Mukut & Jewellery", "मुकुट एवं गहने", "/photos/items/saraswati-mukut-jewellery.jpg"),
+      item("yellow-white-saree", "Yellow & white Saree / Vastra", "पीली व सफ़ेद साड़ी / वस्त्र", "/photos/items/yellow-white-saree.jpg"),
+      item("veena", "Veena", "वीणा", "/photos/items/veena.jpg"),
+      item("saraswati-decoration", "Decoration items", "सजावट का सामान", "/photos/items/saraswati-decoration.jpg"),
     ],
   },
   {
@@ -248,10 +212,10 @@ export const CATEGORIES: Category[] = [
     dates: ["2026-11-08", "2027-10-29", "2028-10-17", "2029-11-05", "2030-10-26"],
     dateLabel: { en: "Lakshmi Puja", hi: "लक्ष्मी पूजा" },
     items: [
-      item("phuljhadi", "Phuljhadi", "फुलझड़ी"),
-      item("anar", "Anar", "अनार"),
-      item("chakri", "Chakri", "चकरी"),
-      item("small-crackers", "Small crackers", "छोटे पटाखे"),
+      item("phuljhadi", "Phuljhadi", "फुलझड़ी", "/photos/items/phuljhadi.jpg"),
+      item("anar", "Anar", "अनार", "/photos/items/anar.jpg"),
+      item("chakri", "Chakri", "चकरी", "/photos/items/chakri.jpg"),
+      item("small-crackers", "Small crackers", "छोटे पटाखे", "/photos/items/small-crackers.jpg"),
     ],
   },
   {
@@ -275,18 +239,33 @@ export const CATEGORIES: Category[] = [
     dates: ["2026-09-17", "2027-09-17", "2028-09-16", "2029-09-17", "2030-09-17"],
     dateLabel: { en: "Vishwakarma Puja", hi: "विश्वकर्मा पूजा" },
     items: [
-      item("bhagwan-chunri", "Chunri for Bhagwan", "भगवान की चुनरी"),
-      item("vehicle-chunri", "Vehicle chunri", "गाड़ी की चुनरी"),
+      item("bhagwan-chunri", "Chunri for Bhagwan", "भगवान की चुनरी", "/photos/items/bhagwan-chunri.jpg"),
+      item("vehicle-chunri", "Vehicle chunri", "गाड़ी की चुनरी", "/photos/items/vehicle-chunri.jpg"),
       item("machine-chunri", "Machine chunri", "मशीन की चुनरी"),
-      item("marigold-mala", "Mala", "माला"),
-      item("ribbon", "Ribbon & decoration", "रिबन एवं सजावट"),
+      item("marigold-mala", "Mala", "माला", "/photos/items/marigold-mala.jpg"),
+      item("ribbon", "Ribbon & decoration", "रिबन एवं सजावट", "/photos/items/ribbon.jpg"),
     ],
   },
 ];
 
-export const HERO_IMAGE: Photo = {
-  src: "/photos/hero.jpg",
-  alt: { en: "Market stall with marigold garlands", hi: "गेंदे की मालाओं वाली दुकान" },
+export const SEED_CONTENT: Content = {
+  shop: {
+    name: { en: "Ahmad Hussain", hi: "अहमद हुसैन" },
+    tagline: {
+      en: "Shaadi, Puja & Festival Items — Wholesale & Retail",
+      hi: "शादी, पूजा एवं त्योहार का सामान — थोक एवं खुदरा",
+    },
+    phone: "+91 88776 99552",
+    whatsapp: "918877699552",
+    address: {
+      en: "Main Bazar, Dalsinghsarai, Samastipur, Bihar 848114, India",
+      hi: "मेन बाज़ार, दलसिंहसराय, समस्तीपुर, बिहार 848114, भारत",
+    },
+    hours: {
+      en: "Every day · 8:00 AM – 9:00 PM",
+      hi: "रोज़ · सुबह 8:00 – रात 9:00",
+    },
+    mapQuery: "Main Bazar, Dalsinghsarai, Samastipur, Bihar 848114",
+  },
+  categories: CATEGORIES,
 };
-
-export const getCategory = (slug: string) => CATEGORIES.find((c) => c.slug === slug);

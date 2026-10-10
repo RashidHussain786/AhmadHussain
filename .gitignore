@@ -39,3 +39,8 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+!.env.example
+
+# admin panel: local test data and uploaded photos (production uses Vercel Blob)
+/.data/
+/public/uploads/

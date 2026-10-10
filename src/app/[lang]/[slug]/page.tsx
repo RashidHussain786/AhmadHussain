@@ -7,20 +7,20 @@ import { CategorySeason } from "@/components/CategorySeason";
 import { PhoneIcon, WhatsAppIcon } from "@/components/Icons";
 import { Breadcrumb, CtaBand, FaqList, JsonLd, type Faq } from "@/components/PageParts";
 import { SectionHeading } from "@/components/Section";
-import { CATEGORIES, getCategory, type Category } from "@/data/categories";
-import { SHOP } from "@/data/shop";
+import { findCategory, getContent, type Category, type Shop } from "@/lib/content";
 import { getDictionary } from "@/lib/dictionary";
 import { isLocale, localePath, type Locale } from "@/lib/i18n";
-import { itemPhoto } from "@/lib/item-photo";
 import { callLink, whatsappLink } from "@/lib/links";
+import { SITE_URL } from "@/lib/site";
 
 export async function generateStaticParams() {
-  return CATEGORIES.map((c) => ({ slug: c.slug }));
+  const { categories } = await getContent();
+  return categories.map((c) => ({ slug: c.slug }));
 }
 
 export async function generateMetadata({ params }: PageProps<"/[lang]/[slug]">): Promise<Metadata> {
   const { lang, slug } = await params;
-  const c = getCategory(slug);
+  const c = findCategory(await getContent(), slug);
   if (!c || !isLocale(lang)) return {};
   const t = getDictionary(lang);
   return {
@@ -35,14 +35,14 @@ export async function generateMetadata({ params }: PageProps<"/[lang]/[slug]">):
 }
 
 /** FAQs built only from real shop facts (items, address, wholesale, phone). */
-function categoryFaqs(c: Category, locale: Locale): Faq[] {
+function categoryFaqs(c: Category, shop: Shop, locale: Locale): Faq[] {
   const t = getDictionary(locale);
   const name = c.name[locale];
   return [
     { q: t.faq.wholesaleQ(name), a: t.faq.wholesaleA },
     { q: t.faq.itemsQ(name), a: t.faq.itemsA(c.items.map((i) => i.name[locale]).join(", ")) },
-    { q: t.faq.areaQ, a: t.faq.areaA(SHOP.address[locale]) },
-    { q: t.faq.priceQ, a: t.faq.priceA(SHOP.phone) },
+    { q: t.faq.areaQ, a: t.faq.areaA(shop.address[locale]) },
+    { q: t.faq.priceQ, a: t.faq.priceA(shop.phone) },
   ];
 }
 
@@ -60,15 +60,16 @@ export default function CategoryPage({ params }: PageProps<"/[lang]/[slug]">) {
 
 async function CategoryContent({ params }: { params: Params }) {
   const { lang, slug } = await params;
-  const c = getCategory(slug);
+  const { shop, categories } = await getContent();
+  const c = findCategory({ shop, categories }, slug);
   if (!c || !isLocale(lang)) notFound();
 
   const t = getDictionary(lang);
-  const others = CATEGORIES.filter((x) => x.slug !== c.slug);
-  const faqs = categoryFaqs(c, lang);
+  const others = categories.filter((x) => x.slug !== c.slug);
+  const faqs = categoryFaqs(c, shop, lang);
   const home = localePath(lang, "/");
   const productsHref = lang === "en" ? "/#products" : `${home}#products`;
-  const url = (path: string) => `${SHOP.siteUrl}${localePath(lang, path)}`;
+  const url = (path: string) => `${SITE_URL}${localePath(lang, path)}`;
 
   return (
     <>
@@ -125,11 +126,11 @@ async function CategoryContent({ params }: { params: Params }) {
               </li>
             </ul>
 
-            <CategorySeason slug={c.slug} locale={lang} />
+            <CategorySeason category={{ dates: c.dates, dateLabel: c.dateLabel }} locale={lang} />
 
             <div className="mt-8 grid max-w-md grid-cols-2 gap-3">
               <a
-                href={whatsappLink(t.wa.category(c.name[lang]))}
+                href={whatsappLink(shop, t.wa.category(c.name[lang]))}
                 target="_blank"
                 rel="noopener"
                 className="inline-flex items-center justify-center gap-2 rounded-lg bg-brand-600 px-3 py-3 text-sm font-bold text-white transition hover:bg-brand-700 sm:text-base"
@@ -137,7 +138,7 @@ async function CategoryContent({ params }: { params: Params }) {
                 <WhatsAppIcon width={18} height={18} className="shrink-0" /> {t.products.ask}
               </a>
               <a
-                href={callLink}
+                href={callLink(shop)}
                 className="inline-flex items-center justify-center gap-2 rounded-lg border border-white/25 px-3 py-3 text-sm font-bold text-white transition hover:bg-white/10 sm:text-base"
               >
                 <PhoneIcon width={18} height={18} className="shrink-0" /> {t.hero.call}
@@ -162,7 +163,7 @@ async function CategoryContent({ params }: { params: Params }) {
         <SectionHeading label={t.products.label} title={t.category.items} subtitle={t.products.subtitle} />
         <ul className="mt-8 grid grid-cols-2 gap-3 sm:grid-cols-3 sm:gap-4 lg:grid-cols-4">
           {c.items.map((item) => {
-            const photo = itemPhoto(item);
+            const photo = item.photo;
             return (
               <li
                 key={item.id}
@@ -187,7 +188,7 @@ async function CategoryContent({ params }: { params: Params }) {
                 <div className="flex flex-1 flex-col gap-3 p-3 sm:p-4">
                   <p className="text-sm leading-snug font-bold text-ink sm:text-[15px]">{item.name[lang]}</p>
                   <a
-                    href={whatsappLink(t.wa.item(item.name[lang], c.name[lang]))}
+                    href={whatsappLink(shop, t.wa.item(item.name[lang], c.name[lang]))}
                     target="_blank"
                     rel="noopener"
                     aria-label={`${t.products.ask}: ${item.name[lang]}`}
@@ -251,6 +252,7 @@ async function CategoryContent({ params }: { params: Params }) {
 
       <CtaBand
         locale={lang}
+        shop={shop}
         title={t.category.ctaTitle(c.name[lang])}
         text={t.category.ctaText}
         message={t.wa.category(c.name[lang])}

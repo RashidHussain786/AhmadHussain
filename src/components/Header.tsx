@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { SHOP } from "@/data/shop";
+import type { Shop } from "@/lib/content/types";
 import { getDictionary } from "@/lib/dictionary";
 import { localePath, type Locale } from "@/lib/i18n";
 import { whatsappLink } from "@/lib/links";
@@ -7,7 +7,7 @@ import { WhatsAppIcon } from "./Icons";
 import { LangSwitch } from "./LangSwitch";
 import { Logo } from "./Logo";
 
-export function Header({ locale }: { locale: Locale }) {
+export function Header({ locale, shop }: { locale: Locale; shop: Shop }) {
   const t = getDictionary(locale);
   const home = localePath(locale, "/");
 
@@ -17,7 +17,7 @@ export function Header({ locale }: { locale: Locale }) {
         <Link href={home} className="flex min-w-0 items-center gap-2.5">
           <Logo size={38} />
           <span className="min-w-0 leading-tight">
-            <span className="block truncate text-[17px] font-extrabold text-ink">{SHOP.name[locale]}</span>
+            <span className="block truncate text-[17px] font-extrabold text-ink">{shop.name[locale]}</span>
             <span className="block truncate text-xs text-muted">{t.hero.eyebrow}</span>
           </span>
         </Link>
@@ -40,7 +40,7 @@ export function Header({ locale }: { locale: Locale }) {
         <div className="flex items-center gap-2">
           <LangSwitch />
           <a
-            href={whatsappLink(t.wa.hello(SHOP.name[locale]))}
+            href={whatsappLink(shop, t.wa.hello(shop.name[locale]))}
             target="_blank"
             rel="noopener"
             className="hidden items-center gap-2 rounded-lg bg-brand-600 px-4 py-2 text-sm font-bold text-white transition hover:bg-brand-700 md:inline-flex"

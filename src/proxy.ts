@@ -16,6 +16,9 @@ export function proxy(request: NextRequest) {
 
   if (pathname === "/hi" || pathname.startsWith("/hi/")) return;
 
+  // Admin panel has its own pages (not under a language)
+  if (pathname === "/admin" || pathname.startsWith("/admin/")) return;
+
   const url = request.nextUrl.clone();
   url.pathname = `/en${pathname === "/" ? "" : pathname}`;
   return NextResponse.rewrite(url);

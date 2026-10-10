@@ -5,11 +5,11 @@ import { ComingSoon } from "@/components/ComingSoon";
 import { ArrowRightIcon, CheckIcon, ClockIcon, MapPinIcon, PhoneIcon, WhatsAppIcon } from "@/components/Icons";
 import { ProductExplorer } from "@/components/ProductExplorer";
 import { SectionHeading } from "@/components/Section";
-import { HERO_IMAGE } from "@/data/categories";
-import { SHOP } from "@/data/shop";
+import { getContent } from "@/lib/content";
 import { getDictionary } from "@/lib/dictionary";
 import { isLocale, localePath } from "@/lib/i18n";
 import { callLink, directionsLink, mapEmbedLink, whatsappLink } from "@/lib/links";
+import { HERO_IMAGE, SITE_URL } from "@/lib/site";
 
 const WHOLESALE_ICONS = ["🎪", "🎨", "🏪", "💍"];
 
@@ -27,16 +27,17 @@ export default async function HomePage({ params }: PageProps<"/[lang]">) {
   const { lang } = await params;
   if (!isLocale(lang)) notFound();
   const t = getDictionary(lang);
+  const { shop, categories } = await getContent();
 
   const jsonLd = {
     "@context": "https://schema.org",
     "@type": "Store",
-    name: SHOP.name.en,
-    alternateName: SHOP.name.hi,
-    description: SHOP.tagline.en,
-    telephone: SHOP.phoneLink,
-    url: SHOP.siteUrl,
-    image: HERO_IMAGE.src,
+    name: shop.name.en,
+    alternateName: shop.name.hi,
+    description: shop.tagline.en,
+    telephone: callLink(shop).replace("tel:", ""),
+    url: SITE_URL,
+    image: `${SITE_URL}${HERO_IMAGE.src}`,
     address: {
       "@type": "PostalAddress",
       streetAddress: "Main Bazar",
@@ -85,7 +86,7 @@ export default async function HomePage({ params }: PageProps<"/[lang]">) {
 
             <div className="mt-8 grid grid-cols-2 gap-3 sm:flex">
               <a
-                href={whatsappLink(t.wa.hello(SHOP.name[lang]))}
+                href={whatsappLink(shop, t.wa.hello(shop.name[lang]))}
                 target="_blank"
                 rel="noopener"
                 className="inline-flex items-center justify-center gap-2 rounded-lg bg-brand-600 px-3 py-3 text-sm font-bold whitespace-nowrap text-white shadow-sm transition hover:bg-brand-700 sm:px-5 sm:text-base"
@@ -112,13 +113,13 @@ export default async function HomePage({ params }: PageProps<"/[lang]">) {
         </div>
       </section>
 
-      <ComingSoon locale={lang} />
+      <ComingSoon locale={lang} categories={categories} />
 
       {/* Products */}
       <section id="products" className="mx-auto max-w-6xl px-4 py-16 sm:py-20">
         <SectionHeading center label={t.products.label} title={t.products.title} subtitle={t.products.subtitle} />
         <div className="mt-10">
-          <ProductExplorer locale={lang} />
+          <ProductExplorer locale={lang} shop={shop} categories={categories} />
         </div>
       </section>
 
@@ -129,7 +130,7 @@ export default async function HomePage({ params }: PageProps<"/[lang]">) {
             <SectionHeading label={t.wholesale.label} title={t.wholesale.title} subtitle={t.wholesale.text} />
             <div className="mt-8 grid grid-cols-2 gap-3 sm:flex">
               <a
-                href={whatsappLink(t.wa.bulk)}
+                href={whatsappLink(shop, t.wa.bulk)}
                 target="_blank"
                 rel="noopener"
                 className="inline-flex items-center justify-center gap-2 rounded-lg bg-brand-600 px-3 py-3 text-center text-sm leading-tight font-bold text-white transition hover:bg-brand-700 sm:px-5 sm:text-base"
@@ -137,7 +138,7 @@ export default async function HomePage({ params }: PageProps<"/[lang]">) {
                 <WhatsAppIcon width={18} height={18} className="shrink-0" /> {t.wholesale.cta}
               </a>
               <a
-                href={callLink}
+                href={callLink(shop)}
                 className="inline-flex items-center justify-center gap-2 rounded-lg border border-line bg-white px-3 py-3 text-center text-sm leading-tight font-bold text-ink transition hover:border-brand-200 hover:text-brand-700 sm:px-5 sm:text-base"
               >
                 <PhoneIcon width={18} height={18} className="shrink-0" /> {t.wholesale.call}
@@ -180,20 +181,20 @@ export default async function HomePage({ params }: PageProps<"/[lang]">) {
             <div className="p-6 sm:p-8">
               <SectionHeading label={t.visit.label} title={t.visit.title} />
               <dl className="mt-6 space-y-5">
-                <InfoRow icon={<MapPinIcon />} label={t.visit.address} value={SHOP.address[lang]} />
-                <InfoRow icon={<ClockIcon />} label={t.visit.hours} value={SHOP.hours[lang]} />
+                <InfoRow icon={<MapPinIcon />} label={t.visit.address} value={shop.address[lang]} />
+                <InfoRow icon={<ClockIcon />} label={t.visit.hours} value={shop.hours[lang]} />
                 <InfoRow
                   icon={<PhoneIcon />}
                   label={t.visit.phone}
                   value={
-                    <a href={callLink} className="hover:text-brand-600">
-                      {SHOP.phone}
+                    <a href={callLink(shop)} className="hover:text-brand-600">
+                      {shop.phone}
                     </a>
                   }
                 />
               </dl>
               <a
-                href={directionsLink}
+                href={directionsLink(shop)}
                 target="_blank"
                 rel="noopener"
                 className="mt-7 inline-flex items-center gap-2 rounded-lg bg-brand-600 px-5 py-3 font-bold text-white transition hover:bg-brand-700"
@@ -203,7 +204,7 @@ export default async function HomePage({ params }: PageProps<"/[lang]">) {
             </div>
             <iframe
               title={t.visit.title}
-              src={mapEmbedLink}
+              src={mapEmbedLink(shop)}
               loading="lazy"
               referrerPolicy="no-referrer-when-downgrade"
               className="h-72 w-full border-0 md:h-full md:min-h-96"

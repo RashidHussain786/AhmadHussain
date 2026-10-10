@@ -1,15 +1,16 @@
 import type { MetadataRoute } from "next";
-import { CATEGORIES } from "@/data/categories";
-import { SHOP } from "@/data/shop";
+import { getContent } from "@/lib/content";
+import { SITE_URL } from "@/lib/site";
 
-export default function sitemap(): MetadataRoute.Sitemap {
-  const paths = ["", "/about", ...CATEGORIES.map((c) => `/${c.slug}`)];
+export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
+  const { categories } = await getContent();
+  const paths = ["", "/about", ...categories.map((c) => `/${c.slug}`)];
   return paths.map((path) => ({
-    url: `${SHOP.siteUrl}${path || "/"}`,
+    url: `${SITE_URL}${path || "/"}`,
     alternates: {
       languages: {
-        en: `${SHOP.siteUrl}${path || "/"}`,
-        hi: `${SHOP.siteUrl}/hi${path}`,
+        en: `${SITE_URL}${path || "/"}`,
+        hi: `${SITE_URL}/hi${path}`,
       },
     },
   }));

@@ -1,13 +1,13 @@
-import { SHOP } from "@/data/shop";
+import type { Shop } from "@/lib/content/types";
 import { getDictionary } from "@/lib/dictionary";
 import type { Locale } from "@/lib/i18n";
 import { callLink, directionsLink, whatsappLink } from "@/lib/links";
 import { MapPinIcon, PhoneIcon, WhatsAppIcon } from "./Icons";
 
 /** Phones: fixed bar at the bottom. Desktop: floating WhatsApp button. */
-export function ContactBar({ locale }: { locale: Locale }) {
+export function ContactBar({ locale, shop }: { locale: Locale; shop: Shop }) {
   const t = getDictionary(locale);
-  const wa = whatsappLink(t.wa.hello(SHOP.name[locale]));
+  const wa = whatsappLink(shop, t.wa.hello(shop.name[locale]));
 
   return (
     <>
@@ -15,7 +15,7 @@ export function ContactBar({ locale }: { locale: Locale }) {
         aria-label="Contact"
         className="fixed inset-x-0 bottom-0 z-40 grid grid-cols-3 border-t border-line bg-white/95 pb-[env(safe-area-inset-bottom)] shadow-[0_-4px_20px_rgb(0_0_0/0.08)] backdrop-blur md:hidden"
       >
-        <a href={callLink} className="flex flex-col items-center gap-0.5 py-2.5 text-xs font-semibold text-ink">
+        <a href={callLink(shop)} className="flex flex-col items-center gap-0.5 py-2.5 text-xs font-semibold text-ink">
           <PhoneIcon width={22} height={22} />
           {t.bar.call}
         </a>
@@ -29,7 +29,7 @@ export function ContactBar({ locale }: { locale: Locale }) {
           {t.bar.whatsapp}
         </a>
         <a
-          href={directionsLink}
+          href={directionsLink(shop)}
           target="_blank"
           rel="noopener"
           className="flex flex-col items-center gap-0.5 py-2.5 text-xs font-semibold text-ink"

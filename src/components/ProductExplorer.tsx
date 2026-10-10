@@ -3,7 +3,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { useState } from "react";
-import { CATEGORIES, type Category } from "@/data/categories";
+import type { Category, Shop } from "@/lib/content/types";
 import { getDictionary } from "@/lib/dictionary";
 import { countdownText } from "@/lib/format";
 import { localePath, type Locale } from "@/lib/i18n";
@@ -15,7 +15,15 @@ import { ArrowRightIcon, SearchIcon, WhatsAppIcon } from "./Icons";
 const PREVIEW_ITEMS = 4;
 
 /** Searchable, filterable grid of all categories. Search matches English and Hindi. */
-export function ProductExplorer({ locale }: { locale: Locale }) {
+export function ProductExplorer({
+  locale,
+  shop,
+  categories,
+}: {
+  locale: Locale;
+  shop: Shop;
+  categories: Category[];
+}) {
   const t = getDictionary(locale);
   const today = useToday();
   const [active, setActive] = useState("all");
@@ -31,12 +39,12 @@ export function ProductExplorer({ locale }: { locale: Locale }) {
 
   // Festivals in season first, then all-year items, then the rest
   const rank = (c: Category) => (today && inSeason(c, today) ? 0 : c.allYear ? 1 : 2);
-  const list = CATEGORIES.filter((c) => (active === "all" || c.slug === active) && matches(c)).sort(
+  const list = categories.filter((c) => (active === "all" || c.slug === active) && matches(c)).sort(
     (a, b) => rank(a) - rank(b),
   );
 
   const chips = [{ slug: "all", icon: "", label: t.products.all }].concat(
-    CATEGORIES.map((c) => ({ slug: c.slug, icon: c.icon, label: c.name[locale] })),
+    categories.map((c) => ({ slug: c.slug, icon: c.icon, label: c.name[locale] })),
   );
 
   return (
@@ -76,7 +84,7 @@ export function ProductExplorer({ locale }: { locale: Locale }) {
         <ul className="mt-8 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
           {list.map((c) => (
             <li key={c.slug}>
-              <CategoryCard category={c} locale={locale} today={today} />
+              <CategoryCard category={c} locale={locale} today={today} shop={shop} />
             </li>
           ))}
         </ul>
@@ -87,7 +95,17 @@ export function ProductExplorer({ locale }: { locale: Locale }) {
   );
 }
 
-function CategoryCard({ category: c, locale, today }: { category: Category; locale: Locale; today: string | null }) {
+function CategoryCard({
+  category: c,
+  locale,
+  today,
+  shop,
+}: {
+  category: Category;
+  locale: Locale;
+  today: string | null;
+  shop: Shop;
+}) {
   const t = getDictionary(locale);
   const season = today ? inSeason(c, today) : null;
   const href = localePath(locale, `/${c.slug}`);
@@ -145,7 +163,7 @@ function CategoryCard({ category: c, locale, today }: { category: Category; loca
             <ArrowRightIcon width={16} height={16} />
           </Link>
           <a
-            href={whatsappLink(t.wa.category(c.name[locale]))}
+            href={whatsappLink(shop, t.wa.category(c.name[locale]))}
             target="_blank"
             rel="noopener"
             className="flex items-center justify-center gap-1.5 rounded-lg bg-whatsapp px-4 py-2.5 text-sm font-bold text-white transition hover:bg-whatsapp-dark"

@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { SHOP } from "@/data/shop";
+import type { Shop } from "@/lib/content/types";
 import { getDictionary } from "@/lib/dictionary";
 import type { Locale } from "@/lib/i18n";
 import { callLink, whatsappLink } from "@/lib/links";
@@ -62,11 +62,13 @@ export function FaqList({ faqs }: { faqs: Faq[] }) {
 /** Full-width saffron gradient band with WhatsApp + Call buttons. */
 export function CtaBand({
   locale,
+  shop,
   title,
   text,
   message,
 }: {
   locale: Locale;
+  shop: Shop;
   title: string;
   text: string;
   message?: string;
@@ -79,7 +81,7 @@ export function CtaBand({
         <p className="mx-auto mt-3 max-w-2xl text-white/90">{text}</p>
         <div className="mx-auto mt-8 grid max-w-md grid-cols-2 gap-3">
           <a
-            href={whatsappLink(message ?? t.wa.hello(SHOP.name[locale]))}
+            href={whatsappLink(shop, message ?? t.wa.hello(shop.name[locale]))}
             target="_blank"
             rel="noopener"
             className="inline-flex items-center justify-center gap-2 rounded-lg bg-white px-3 py-3 text-sm font-bold text-brand-700 transition hover:bg-brand-50 sm:text-base"
@@ -87,7 +89,7 @@ export function CtaBand({
             <WhatsAppIcon width={18} height={18} className="shrink-0" /> WhatsApp
           </a>
           <a
-            href={callLink}
+            href={callLink(shop)}
             className="inline-flex items-center justify-center gap-2 rounded-lg border border-white/40 px-3 py-3 text-sm font-bold text-white transition hover:bg-white/10 sm:text-base"
           >
             <PhoneIcon width={18} height={18} className="shrink-0" /> {t.bar.call}

@@ -1,6 +1,6 @@
 "use client";
 
-import { getCategory } from "@/data/categories";
+import type { Category } from "@/lib/content/types";
 import { getDictionary } from "@/lib/dictionary";
 import { countdownText, formatDate } from "@/lib/format";
 import type { Locale } from "@/lib/i18n";
@@ -8,10 +8,15 @@ import { DAYS_BEFORE, nextFestival } from "@/lib/season";
 import { useToday } from "@/lib/use-today";
 
 /** Next festival date + countdown for one category, computed in the browser. */
-export function CategorySeason({ slug, locale }: { slug: string; locale: Locale }) {
+export function CategorySeason({
+  category,
+  locale,
+}: {
+  category: Pick<Category, "dates" | "dateLabel">;
+  locale: Locale;
+}) {
   const today = useToday();
-  const category = getCategory(slug);
-  if (!today || !category?.dates) return null;
+  if (!today || !category.dates?.length) return null;
 
   const next = nextFestival(category, today);
   if (!next) return null;

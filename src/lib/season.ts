@@ -1,4 +1,4 @@
-import type { Category } from "@/data/categories";
+import type { Category } from "@/lib/content/types";
 
 /** Show a festival this many days before it. */
 export const DAYS_BEFORE = 45;
@@ -23,7 +23,7 @@ export function todayISO(now = new Date()) {
 export type Upcoming = { date: string; daysLeft: number };
 
 /** Next festival date that hasn't finished yet. */
-export function nextFestival(category: Category, today: string): Upcoming | null {
+export function nextFestival(category: Pick<Category, "dates">, today: string): Upcoming | null {
   const t = dayNumber(today);
   for (const date of category.dates ?? []) {
     const daysLeft = dayNumber(date) - t;
@@ -33,7 +33,7 @@ export function nextFestival(category: Category, today: string): Upcoming | null
 }
 
 /** Festival is close enough to show under "Coming soon". */
-export function inSeason(category: Category, today: string): Upcoming | null {
+export function inSeason(category: Pick<Category, "dates">, today: string): Upcoming | null {
   const next = nextFestival(category, today);
   return next && next.daysLeft <= DAYS_BEFORE ? next : null;
 }
